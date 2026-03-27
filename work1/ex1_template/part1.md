@@ -63,6 +63,27 @@ Write the new function under the name `getDiscountedProductAveragePriceFP`.
 **Important**: the new function should have the same signature.
 
 **Note**: there are no tests for this question, and it will not be executed. The task here is to write the code in a functional way.
+**Answer**
+```ts
+type Product = {
+  name: string;
+  price: number;
+  discounted: boolean;
+};
+const getDiscountedProductAveragePrice = (inventory: Product[]): number => {
+  let discountedPriceSum = 0;
+  let discountedProductsCount = 0;
+
+  let discountedProducts = inventory.filter(product => product.dicounted);
+  discountedProductsCount = discountedProducts.length;
+  if (discountedProductsCount === 0) {
+    return 0;
+  }
+  discountedPriceSum = discountedProducts.reduce((a,b) => a + b , 0);
+
+  return discountedPriceSum / discountedProductsCount;
+};
+```
 
 ### [18 points] Question 1.3
 
