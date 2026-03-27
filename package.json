@@ -1,0 +1,5 @@
+{
+  "devDependencies": {
+    "@types/ramda": "^0.31.1"
+  }
+}
