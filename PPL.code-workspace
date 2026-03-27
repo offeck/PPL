@@ -4,5 +4,13 @@
 			"path": "."
 		}
 	],
-	"settings": {}
+	"settings": {
+		"typescript.tsdk": "work1/ex1_template/node_modules/typescript/lib",
+		"editor.formatOnSave": true,
+		"files.exclude": {
+			"**/node_modules": true,
+			"**/dist": true,
+			"**/coverage": true
+		}
+	}
 }
