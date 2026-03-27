@@ -5,7 +5,7 @@ Submit the solution to this part as `part1.md`.
 ### [25 points] Question 1.1
 
 1. Explain in simple words the following programming paradigms:
-   1. [5 points] Imperative
+   1. [5 points] Imperative - Imperative languages are languages where control flow is an explicit sequence of commands.
    1. [5 points] Object Oriented
 
       **Answer:** Object Oriented programming organizes code into objects — units that bundle data (properties) and the operations on that data (methods) together into classes. It relies on key principles: encapsulation (hiding internal details behind an interface), inheritance (reusing and extending behavior from parent classes), and polymorphism (allowing different objects to respond to the same method in different ways).
