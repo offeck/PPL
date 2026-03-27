@@ -4,7 +4,8 @@ const stringToArray = R.split("");
 
 /* Question 2.1 */
 const vowels: string[] = ['a', 'e', 'i', 'o', 'u'];
-export const countVowels: (s: string) => number = undefined as any;;
+export const countVowels: (s: string) => number = (s) => 
+    stringToArray(s).filter(vowels.includes).length;
 
 /* Question 2.2 */
 export const isPalindrome = (text: string): boolean => undefined as any;;
