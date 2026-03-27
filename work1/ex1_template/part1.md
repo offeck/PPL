@@ -5,7 +5,7 @@ Submit the solution to this part as `part1.md`.
 ### [25 points] Question 1.1
 
 1. Explain in simple words the following programming paradigms:
-   1. [5 points] Imperative
+   1. [5 points] Imperative - Imperative languages are languages where control flow is an explicit sequence of commands.
    1. [5 points] Object Oriented
    1. [5 points] Functional
 1. [5 points] How does the object oriented paradigm improve over the imperative paradigm?
