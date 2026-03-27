@@ -21,6 +21,9 @@ Submit the solution to this part as `part1.md`.
    **Answer:** The Object Oriented paradigm improves over the Imperative paradigm by bundling data and the operations that act on it into objects, providing encapsulation, modularity, and code reuse (via inheritance and polymorphism). In imperative programming, data and functions are separate, making it harder to organize and maintain large codebases. OOP introduces clear abstractions and interfaces that allow programs to better model real-world entities, reduce code duplication, and limit the scope in which state can be modified — leading to more maintainable and scalable software.
 
 1. [5 points] How does the functional paradigm improve over the object oriented paradigm?
+  **Answer** The functional paradigm is an improvement for the following reasons: a. The way the program is executed is closely related to the way we prove and justify the correctness of a program mathematically. b. expressions have no side-effects, it is natural to use parallel evaluation: the values of independent sub-expressions may be determined simultaneously, without fear of interference or conflict, and the final result is not affected by evaluation order. This enables programs to exploit available parallelism without fear of disrupting their correctness. c. emphasizes the isolation of abstract types that clearly separate implementation from interface.Types are used to express and enforce abstraction boundaries, greatly enhancing maintainability of programs, and facilitating team development.
+
+
 
 ### [10 points] Question 1.2
 
