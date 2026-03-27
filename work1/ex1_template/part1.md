@@ -105,3 +105,5 @@ Guidelines:
    **Answer:** `(x: boolean, y: T[]) => T`
 
 6. [3 points] `(f,g) => x => f(g(x+1))`
+
+   **Answer:** `(f: (s: S) => T, g: (n: number) => S) => (x: number) => T`
