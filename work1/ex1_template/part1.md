@@ -22,7 +22,7 @@ Submit the solution to this part as `part1.md`.
 
 1. [5 points] How does the functional paradigm improve over the object oriented paradigm?
 
-   **Answer:** The Functional paradigm improves over the Object Oriented paradigm by eliminating side effects and mutable shared state. In OOP, objects hold internal state that methods can modify, making it difficult to reason about behavior — especially when multiple objects interact or code runs concurrently. Functional programming relies on pure functions (same input always yields same output) and immutable data, which makes code easier to verify, test, and reason about. It also naturally supports parallelism, since functions without side effects can run independently without risk of race conditions. Additionally, expressing logic through function composition (map, filter, reduce) leads to simpler, more declarative designs compared to the complex class hierarchies and design patterns often required in OOP.
+   **Answer:** The Functional paradigm improves over the Object Oriented paradigm by eliminating side effects and mutable shared state. In OOP, objects hold internal state that methods can modify, making it difficult to reason about behavior — especially when multiple objects interact or code runs concurrently. In FP, expressions have no side effects, so it is natural to use parallel evaluation: independent sub-expressions may be computed simultaneously without fear of interference, and the final result is not affected by evaluation order. Furthermore, the way programs are executed in FP is closely related to how we prove and justify correctness mathematically, making code easier to verify and test. FP also emphasizes the isolation of abstract types that clearly separate implementation from interface, enhancing maintainability and facilitating team development.
 
 ### [10 points] Question 1.2
 
@@ -62,6 +62,7 @@ Write the new function under the name `getDiscountedProductAveragePriceFP`.
 **Important**: the new function should have the same signature.
 
 **Note**: there are no tests for this question, and it will not be executed. The task here is to write the code in a functional way.
+**Answer:**
 
 ```ts
 const getDiscountedProductAveragePriceFP = (inventory: Product[]): number => {
@@ -83,9 +84,24 @@ Guidelines:
 - Use generics where possible.
 - Avoid using `any`.
 
-1. [3 points] `(x, y) => x.some(y)` x:T[], y:(a:T)=>bool, res:bool | (x:T[], y: (a:T)=>bool)=>bool
-2. [3 points] `x => x.map(y => y * 2)` (x:number[])=>number[]
-3. [3 points] `(x, y) => x.filter(y)` (x:T[], y: (a:T)=>bool)=>T[]
-4. [3 points] `x => x.reduce((acc, cur) => acc + cur, 0)` (x:number[]) => number
-5. [3 points] `(x, y) => x ? y[0] : y[1]` (x:bool, y:T[])=>T
-6. [3 points] `(f,g) => x => f(g(x+1))` 
+1. [3 points] `(x, y) => x.some(y)`
+
+   **Answer:** `(x: T[], y: (a: T) => boolean) => boolean`
+
+2. [3 points] `x => x.map(y => y * 2)`
+
+   **Answer:** `(x: number[]) => number[]`
+
+3. [3 points] `(x, y) => x.filter(y)`
+
+   **Answer:** `(x: T[], y: (a: T) => boolean) => T[]`
+
+4. [3 points] `x => x.reduce((acc, cur) => acc + cur, 0)`
+
+   **Answer:** `(x: number[]) => number`
+
+5. [3 points] `(x, y) => x ? y[0] : y[1]`
+
+   **Answer:** `(x: boolean, y: T[]) => T`
+
+6. [3 points] `(f,g) => x => f(g(x+1))`
