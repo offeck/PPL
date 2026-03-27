@@ -96,6 +96,8 @@ Guidelines:
 - Avoid using `any`.
 
 1. [3 points] `(x, y) => x.some(y)`
+  **Answer** 
+  x is an array of T and y is a function that runs on T and returns a boolean answer.
 2. [3 points] `x => x.map(y => y * 2)`
 3. [3 points] `(x, y) => x.filter(y)`
 4. [3 points] `x => x.reduce((acc, cur) => acc + cur, 0)`
