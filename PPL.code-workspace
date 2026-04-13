@@ -7,6 +7,9 @@
 	"settings": {
 		"typescript.tsdk": "work1/ex1_template/node_modules/typescript/lib",
 		"editor.formatOnSave": true,
+		"files.associations": {
+			"*.l3": "scheme"
+		},
 		"files.exclude": {
 			"**/node_modules": true,
 			"**/dist": true,

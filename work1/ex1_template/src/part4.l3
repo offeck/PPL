@@ -1,15 +1,64 @@
+; Signature: last-item(lst)
+; Type: [list[T]]=>T
+; Purpose: Returns the last element of a list
+; Pre-conditions: list is not empty
+; Tests: (last-item '(1 2 3)) => 3
+
 (define last-item
   (λ (lst)
-    'todo))
+    (if (eq? (cdr lst) '())
+     (car lst)
+     (last-item (cdr lst)))
+))
+
+; Signature: remove-last-item(lst)
+; Type: [list[T]]=>list[T]
+; Purpose: Removes the last element of a list
+; Pre-conditions: list is not empty
+; Tests: (remove-last-item '(1 2 3)) => '(1 2)
 
 (define remove-last-item
   (λ (lst)
-    'todo))
+    (if (eq? (cdr lst) '())
+    '()
+    (cons (car lst) (remove-last-item (cdr lst))))
+))
+
+; Signature: rotate-nth(lst n)
+; Type: [list[T], number]=>list[T]
+; Purpose: Rotates the list n times
+; Pre-conditions: list is not empty, n>=0.
+; Tests: (rotate-nth '(1 2 3) 1) => (3 1 2)
 
 (define rotate-nth
   (λ (lst n)
-   'todo))
+  (if (> n 0)
+   (rotate-nth (cons (last-item lst) (remove-last-item lst)) (- n 1))
+   lst
+   )))
+
+; Signature: append(lst1, lst2)
+; Type: [list[T], list[T]]=>list[T]
+; Purpose: Concatenates two lists
+; Pre-conditions:
+; Tests: (append '(1 2) '(3 4)) => '(1 2 3 4)
+
+(define append
+  (λ (lst1 lst2)
+    (if (eq? lst1 '())
+        lst2
+        (cons (car lst1) (append (cdr lst1) lst2)))))
+
+; Signature: deep-reverse(l)
+; Type: [list]=>list
+; Purpose: Returns a list with all elements reversed at every level of nesting
+; Pre-conditions:
+; Tests: (deep-reverse '(1 (2 3) (4 5))) => ((5 4) (3 2) 1)
 
 (define deep-reverse
   (λ (l)
-    'todo))
+    (if (eq? l '())
+        '()
+        (if (pair? (car l))
+            (append (deep-reverse (cdr l)) (cons (deep-reverse (car l)) '()))
+            (append (deep-reverse (cdr l)) (cons (car l) '()))))))

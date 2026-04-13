@@ -6,7 +6,14 @@
       "Bash(npx jest:*)",
       "*",
       "Bash(gh run:*)",
-      "Bash(npm test:*)"
+      "Bash(npm test:*)",
+      "Bash(pip show:*)",
+      "Bash(pip install:*)",
+      "Bash(winget install:*)",
+      "Bash(ls node_modules/.bin/jest*)",
+      "Bash(where racket:*)",
+      "Bash(export PATH=\"$PATH:/c/Program Files/Racket\")",
+      "Bash(racket -e ':*)"
     ]
   }
 }
