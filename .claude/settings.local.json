@@ -13,7 +13,9 @@
       "Bash(ls node_modules/.bin/jest*)",
       "Bash(where racket:*)",
       "Bash(export PATH=\"$PATH:/c/Program Files/Racket\")",
-      "Bash(racket -e ':*)"
+      "Bash(racket -e ':*)",
+      "Bash(racket:*)",
+      "Bash(where.exe racket:*)"
     ]
   }
 }

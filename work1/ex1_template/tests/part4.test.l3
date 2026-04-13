@@ -26,6 +26,22 @@
             (check-equal? (rotate-nth '(hello world) 1) '(world hello))
             (check-equal? (rotate-nth '(x y z) 0) '(x y z))
         )
+
+        (test-suite "append"
+            (check-equal? (append '(1 2) '(3 4)) '(1 2 3 4))
+            (check-equal? (append '() '(1 2)) '(1 2))
+            (check-equal? (append '(1 2) '()) '(1 2))
+            (check-equal? (append '() '()) '())
+            (check-equal? (append '(a) '(b c)) '(a b c))
+        )
+
+        (test-suite "deep-reverse"
+            (check-equal? (deep-reverse '(1 (2 3) (4 5))) '((5 4) (3 2) 1))
+            (check-equal? (deep-reverse '(1 2 3)) '(3 2 1))
+            (check-equal? (deep-reverse '()) '())
+            (check-equal? (deep-reverse '((1 2) (3 4))) '((4 3) (2 1)))
+            (check-equal? (deep-reverse '(1 (2 (3 4)))) '(((4 3) 2) 1))
+        )
     )
 )
 
