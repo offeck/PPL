@@ -50,7 +50,7 @@
         (cons (car lst1) (append (cdr lst1) lst2)))))
 
 ; Signature: deep-reverse(l)
-; Type: [list]=>list
+; Type: [list[list[T]]]=>list[list[T]]
 ; Purpose: Returns a list with all elements reversed at every level of nesting
 ; Pre-conditions:
 ; Tests: (deep-reverse '(1 (2 3) (4 5))) => ((5 4) (3 2) 1)
