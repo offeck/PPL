@@ -15,7 +15,9 @@
       "Bash(export PATH=\"$PATH:/c/Program Files/Racket\")",
       "Bash(racket -e ':*)",
       "Bash(racket:*)",
-      "Bash(where.exe racket:*)"
+      "Bash(where.exe racket:*)",
+      "Bash(zip -r \"../ex1_submission.zip\" part1.md src/part2.ts src/part3.ts src/lib/result.ts)",
+      "Bash(powershell -Command \"Compress-Archive -Path 'part1.md','src/part2.ts','src/part3.ts','src/lib/result.ts' -DestinationPath '../ex1_submission.zip' -Force\")"
     ]
   }
 }
