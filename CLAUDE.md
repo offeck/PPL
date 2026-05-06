@@ -3,14 +3,18 @@
 ## Project Overview
 
 University course assignments for **PPL (Principles of Programming Languages)** at Ben-Gurion University.
-Instructor's lecture notes: `lecture-notes.pdf` (Meni Adler, 160 pages) — this is the **ground truth** for all course material.
+Instructor's lecture notes available in two formats:
+- `lecture-notes.pdf` (Meni Adler, 160 pages) — original PDF, **ground truth** for all course material
+- `lecture-notes.md` (text extraction) — searchable markdown version of the same content, useful for quick lookups and grep
 
 ## Ground Truth: Lecture Notes Reference
 
-The file `lecture-notes.pdf` is the authoritative source for this course. When helping with assignments:
+The lecture notes are the authoritative source for this course. When helping with assignments:
 - **Always consult the lecture notes** before answering theoretical questions or suggesting implementations
+- Use `lecture-notes.md` for searching/grepping specific topics, code examples, and definitions
 - Terminology, definitions, and notation must match the lecture notes exactly
 - The notes are in Hebrew with code examples in English (TypeScript, Scheme/Racket, Prolog)
+- Note: `lecture-notes.md` has some Hebrew word-boundary artifacts from PDF extraction; code examples are accurate
 
 ### Lecture Notes Structure (page ranges for quick lookup)
 | Chapter | Pages | Topic |
@@ -37,7 +41,8 @@ The file `lecture-notes.pdf` is the authoritative source for this course. When h
 
 ```
 PPL/
-  lecture-notes.pdf          # Ground truth - course lecture notes
+  lecture-notes.pdf          # Ground truth - course lecture notes (original PDF)
+  lecture-notes.md           # Searchable text extraction of lecture notes
   work<N>/                   # Assignment N folder
     ppl262_hw_<N>.pdf        # Assignment instructions
     ex<N>_template/          # Provided template with tests
