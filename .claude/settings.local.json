@@ -18,7 +18,9 @@
       "Bash(where.exe racket:*)",
       "Bash(zip -r \"../ex1_submission.zip\" part1.md src/part2.ts src/part3.ts src/lib/result.ts)",
       "Bash(powershell -Command \"Compress-Archive -Path 'part1.md','src/part2.ts','src/part3.ts','src/lib/result.ts' -DestinationPath '../ex1_submission.zip' -Force\")",
-      "Bash(python *)"
+      "Bash(python *)",
+      "Bash(pdfinfo \"work2/Assignment 2.pdf\")",
+      "Bash(pdftotext -f 1 -l 1 \"work2/Assignment 2.pdf\" -)"
     ]
   }
 }
