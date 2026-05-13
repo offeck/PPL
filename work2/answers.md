@@ -67,3 +67,97 @@ Transforms to the equivalent L22 expression:
 ```scheme
 (lambda (x) (lambda (y) ((lambda (_) (+ x y)) (+ x 1))))
 ```
+
+## Question 1.4
+
+**Q:** Let us define the L23 language as L2, where procedures (lambda) are first-order, i.e. cannot get functions as arguments. Is there a program in L2 which cannot be transformed to an equivalent program in L23?
+
+**A:** No. L23 still has `lambda`, `if`, `define`, and recursion, so it remains Turing-Complete and can compute any computable function. Higher-order functions are a syntactic convenience, not a computational necessity. For any L2 program that passes a function as an argument, we can eliminate the higher-order usage by inlining the specific function at each call site. Since L2 programs are finite, there are always finitely many functions being passed, so this transformation (defunctionalization) always terminates.
+
+**Example:**
+
+```scheme
+;; L2 (higher-order)
+(define apply-twice (lambda (f x) (f (f x))))
+(define square (lambda (x) (* x x)))
+(apply-twice square 3)
+```
+
+Transforms to the equivalent L23 program:
+
+```scheme
+;; L23 (first-order) — inline the specific function
+(define square (lambda (x) (* x x)))
+(square (square 3))
+```
+
+## Question 1.5
+
+**Q:** Why are special forms required in programming languages? Why can't we simply define them as primitive operators? Give an example.
+
+**A:** Special forms are required because they need to control **which sub-expressions get evaluated and when**, which contradicts the default evaluation rule for procedure application (evaluate all arguments first, then apply).
+
+If special forms were primitive operators, all their arguments would be evaluated before application, which leads to incorrect behavior. For example, `if` must evaluate only one of its two branches based on the condition — not both.
+
+**Example:**
+
+```scheme
+(define x 0)
+(if (= x 0) 1 (/ 1 x))
+```
+
+If `if` were a primitive operator, the interpreter would evaluate all three arguments before applying:
+1. `(= x 0)` → `#t`
+2. `1` → `1`
+3. `(/ 1 x)` → **division by zero error!**
+
+As a special form, `if` first evaluates the condition `(= x 0)` to `#t`, and then evaluates **only** the consequent `1`, never reaching the problematic `(/ 1 x)`.
+
+Similarly, `define` in `(define y 5)` must not evaluate `y` (it has no value yet), and `lambda` in `(lambda (x) (* x x))` must not evaluate its body at definition time.
+
+## Question 1.6
+
+**Q:** Is a function-body with multiple expressions required in a pure functional programming? In which type of languages is it useful? What about L3?
+
+**A:** No, multiple expressions in a function body are not required in pure functional programming. In a pure functional language there are no side effects, so only the last expression's value matters — the preceding expressions have no observable effect. Any multi-expression body can be rewritten using nested lambdas, as shown in Q1.3: `(lambda (x) e1 e2)` becomes `(lambda (x) ((lambda (_) e2) e1))`.
+
+Multiple body expressions are useful in **imperative languages** that have side effects (e.g., mutation, I/O, printing). In such languages, each expression in the body may perform a meaningful action beyond computing a return value.
+
+As for L3 — it is a pure functional language (no mutation, no I/O side effects), so multiple body expressions are not required. They are supported as syntactic convenience, but carry no additional expressive power.
+
+## Question 1.7
+
+**Q:** What is lexical address? Give an example which demonstrates this concept.
+
+**A:** A lexical address replaces a variable reference with a pair of coordinates that point to where the variable is defined:
+- **Depth** — how many scoping levels up from the current scope to the scope where the variable is defined.
+- **Position** — the index of the variable within that scope's parameter list.
+
+Variables not defined in any enclosing scope are marked as `free`.
+
+**Example:**
+
+```scheme
+(lambda (x y)
+  (
+    (lambda (x) (+ x y))
+    (+ x z)
+  ))
+```
+
+After adding lexical addresses:
+
+```scheme
+(lambda (x y)
+  (
+    (lambda (x) (+ [x : 0 0] [y : 1 1]))
+    (+ [x : 0 0] [z : free])
+  ))
+```
+
+- `x` inside the inner lambda → `[x : 0 0]`: depth 0 (defined in current lambda), position 0 (first parameter).
+- `y` inside the inner lambda → `[y : 1 1]`: depth 1 (one level up), position 1 (second parameter of outer lambda).
+- `x` in `(+ x z)` → `[x : 0 0]`: depth 0 (defined in the outer lambda), position 0.
+- `z` → `[z : free]`: not defined in any enclosing lambda.
+
+Lexical addresses make variable lookup unambiguous without relying on names, which is especially useful when different scopes reuse the same variable name (like `x` above).
