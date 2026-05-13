@@ -42,8 +42,6 @@ from reportlab.pdfbase.ttfonts import TTFont
 # Constants
 # ---------------------------------------------------------------------------
 
-_FONT_DIR = '/usr/share/fonts/truetype/dejavu'
-
 _COLOR_BG_CODE = HexColor('#f5f5f5')
 _COLOR_BORDER_CODE = HexColor('#e0e0e0')
 _COLOR_LINK = HexColor('#1a5276')
@@ -53,36 +51,81 @@ _COLOR_H3 = HexColor('#34495e')
 
 _RTL_RE = re.compile(r'[\u0590-\u05FF\u0600-\u06FF\u0750-\u077F\u08A0-\u08FF]')
 
+_FONTS_REGISTERED = False
+
 
 # ---------------------------------------------------------------------------
 # Font registration
 # ---------------------------------------------------------------------------
 
-def _register_fonts():
-    """Register DejaVu fonts with reportlab."""
-    fonts = {
-        'DejaVu':       f'{_FONT_DIR}/DejaVuSans.ttf',
-        'DejaVu-Bold':  f'{_FONT_DIR}/DejaVuSans-Bold.ttf',
-        'DejaVu-Italic': f'{_FONT_DIR}/DejaVuSans-Oblique.ttf',
-        'DejaVu-BoldItalic': f'{_FONT_DIR}/DejaVuSans-BoldOblique.ttf',
-        'DejaVuMono':   f'{_FONT_DIR}/DejaVuSansMono.ttf',
-        'DejaVuMono-Bold': f'{_FONT_DIR}/DejaVuSansMono-Bold.ttf',
-    }
-    for name, path in fonts.items():
-        try:
-            pdfmetrics.registerFont(TTFont(name, path))
-        except Exception as e:
-            print(f"WARNING: Could not register font {name}: {e}", file=sys.stderr)
+def _find_font_dirs():
+    """Return candidate font directories for DejaVu, cross-platform."""
+    import platform
+    candidates = ['/usr/share/fonts/truetype/dejavu']
+    if platform.system() == 'Windows':
+        import os
+        windir = os.environ.get('WINDIR', r'C:\Windows')
+        candidates.insert(0, os.path.join(windir, 'Fonts'))
+    return candidates
 
-    # Register font family for bold/italic markup in Paragraphs
+
+def _register_fonts():
+    """Register DejaVu fonts if available, otherwise fall back to Helvetica/Courier."""
+    global _FONTS_REGISTERED
+    if _FONTS_REGISTERED:
+        return
+    _FONTS_REGISTERED = True
+
     from reportlab.pdfbase.pdfmetrics import registerFontFamily
-    registerFontFamily(
-        'DejaVu',
-        normal='DejaVu',
-        bold='DejaVu-Bold',
-        italic='DejaVu-Italic',
-        boldItalic='DejaVu-BoldItalic',
-    )
+    import os
+
+    font_files = {
+        'DejaVu':           'DejaVuSans.ttf',
+        'DejaVu-Bold':      'DejaVuSans-Bold.ttf',
+        'DejaVu-Italic':    'DejaVuSans-Oblique.ttf',
+        'DejaVu-BoldItalic':'DejaVuSans-BoldOblique.ttf',
+        'DejaVuMono':       'DejaVuSansMono.ttf',
+        'DejaVuMono-Bold':  'DejaVuSansMono-Bold.ttf',
+    }
+
+    font_dir = None
+    for d in _find_font_dirs():
+        if os.path.isfile(os.path.join(d, 'DejaVuSans.ttf')):
+            font_dir = d
+            break
+
+    if font_dir:
+        for name, filename in font_files.items():
+            try:
+                pdfmetrics.registerFont(TTFont(name, os.path.join(font_dir, filename)))
+            except Exception as e:
+                print(f"WARNING: Could not register font {name}: {e}", file=sys.stderr)
+        registerFontFamily(
+            'DejaVu',
+            normal='DejaVu',
+            bold='DejaVu-Bold',
+            italic='DejaVu-Italic',
+            boldItalic='DejaVu-BoldItalic',
+        )
+    else:
+        # Fallback: alias DejaVu names to built-in Helvetica/Courier
+        from reportlab.pdfbase.pdfmetrics import registerFontFamily as rff
+        # Built-in fonts don't need TTFont registration
+        # Map our custom names to built-ins via aliases
+        # Use Helvetica/Courier directly — update style names globally
+        global _FALLBACK_BODY_FONT, _FALLBACK_MONO_FONT
+        _FALLBACK_BODY_FONT = 'Helvetica'
+        _FALLBACK_MONO_FONT = 'Courier'
+        registerFontFamily(
+            'Helvetica',
+            normal='Helvetica',
+            bold='Helvetica-Bold',
+            italic='Helvetica-Oblique',
+            boldItalic='Helvetica-BoldOblique',
+        )
+
+_FALLBACK_BODY_FONT = None
+_FALLBACK_MONO_FONT = None
 
 
 # ---------------------------------------------------------------------------
@@ -110,8 +153,8 @@ def _bidi_reshape(text: str) -> str:
 def _build_styles(base_size: int = 11, is_rtl: bool = False):
     """Create a style dictionary for the PDF."""
     alignment = TA_RIGHT if is_rtl else TA_LEFT
-    font = 'DejaVu'
-    mono = 'DejaVuMono'
+    font = _FALLBACK_BODY_FONT or 'DejaVu'
+    mono = _FALLBACK_MONO_FONT or 'DejaVuMono'
 
     styles = {}
 
@@ -224,7 +267,8 @@ def _inline_to_markup(tokens, use_bidi: bool = False) -> str:
         elif ttype == 'codespan':
             raw = tok.get('raw', tok.get('text', ''))
             t = _escape_xml(raw)
-            parts.append(f'<font face="DejaVuMono" size="-1">{t}</font>')
+            mono_face = _FALLBACK_MONO_FONT or 'DejaVuMono'
+            parts.append(f'<font face="{mono_face}" size="-1">{t}</font>')
 
         elif ttype == 'strong':
             inner = _inline_to_markup(tok.get('children', []), use_bidi)
@@ -329,7 +373,7 @@ def _ast_to_flowables(ast_nodes, styles, use_bidi: bool = False, page_width: flo
                 lf = ListFlowable(
                     list_items,
                     bulletType=bullet_type,
-                    bulletFontName='DejaVu',
+                    bulletFontName=_FALLBACK_BODY_FONT or 'DejaVu',
                     bulletFontSize=styles['body'].fontSize - 1,
                     leftIndent=8 * mm,
                     spaceBefore=2 * mm,
@@ -381,7 +425,7 @@ def _ast_to_flowables(ast_nodes, styles, use_bidi: bool = False, page_width: flo
                     t = Table(all_rows, colWidths=col_widths, repeatRows=1)
                     t.setStyle(TableStyle([
                         ('BACKGROUND', (0, 0), (-1, 0), HexColor('#e8e8e8')),
-                        ('FONTNAME', (0, 0), (-1, 0), 'DejaVu-Bold'),
+                        ('FONTNAME', (0, 0), (-1, 0), (_FALLBACK_BODY_FONT or 'DejaVu') + '-Bold'),
                         ('GRID', (0, 0), (-1, -1), 0.5, HexColor('#cccccc')),
                         ('VALIGN', (0, 0), (-1, -1), 'TOP'),
                         ('TOPPADDING', (0, 0), (-1, -1), 4),
@@ -432,7 +476,7 @@ def _ast_to_flowables(ast_nodes, styles, use_bidi: bool = False, page_width: flo
 def _add_page_number(canvas, doc):
     """Draw page number centered at the bottom of each page."""
     canvas.saveState()
-    canvas.setFont('DejaVu', 9)
+    canvas.setFont(_FALLBACK_BODY_FONT or 'DejaVu', 9)
     page_num = canvas.getPageNumber()
     text = f"— {page_num} —"
     canvas.drawCentredString(doc.pagesize[0] / 2.0, 15 * mm, text)

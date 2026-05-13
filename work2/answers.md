@@ -166,8 +166,8 @@ Lexical addresses make variable lookup unambiguous without relying on names, whi
 
 **Q1.8** In practical session 5, we deal with two representations of primitive operations: PrimOp and Closure. List an advantage for each of the two methods [2 points].
 
-**A:** An advantage of PrimOp is that it doesn't need an environment, because it's behaviour is fixed. (Hence it carries no enviroment). Therefore, it is more efficient.
-An advantage of closure is it's flexibility, because a closure captures its defining environment, the same function body can behave differently depending on where it was created. This enables higher-order languages.
+**A:** An advantage of PrimOp is that it doesn't need an environment, because its behavior is fixed. (Hence it carries no environment). Therefore, it is more efficient.
+An advantage of Closure is its flexibility, because a closure captures its defining environment, the same function body can behave differently depending on where it was created. This enables higher-order languages.
 
 ## Question 1.9
 
@@ -175,7 +175,7 @@ An advantage of closure is it's flexibility, because a closure captures its defi
 a. What are the reasons that would justify switching from applicative order to normal order evaluation? Give an example.
 b. What are the reasons that would justify switching from normal order to applicative order evaluation? Give an example.
 
-**A:** a. In normal order, expressions that would loop infinitely in applicative order can be terminated. Furthemore, values are only computed when called upon. So this function, which would crash in applicative order becuase we cannot devide by 0, would not crush becuase the ation of division by zero is avoided by our boolean condition.
+**A:** a. In normal order, expressions that would loop infinitely in applicative order can be terminated. Furthermore, values are only computed when called upon. So this function, which would crash in applicative order because we cannot divide by 0, would not crash because the action of division by zero is avoided by our boolean condition.
 
 ```scheme
 (define x 0)
