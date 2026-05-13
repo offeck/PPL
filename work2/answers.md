@@ -220,4 +220,4 @@ c. In the environment model, values are never substituted into the body at all. 
 
 **A:** 
 
-a. In the environment model (L4), there's no substitution at all — variables are looked up by navigating the frame hierarchy at runtime. The hierarchy itself keeps different zs in different frames, so there's never any confusion. Renaming is purely an artifact of the substitution model.
+a. In the environment model (L4), there's no substitution at all — variables are looked up by navigating the frame hierarchy at runtime. The hierarchy itself keeps different 'variable names' in different frames, so there's never any confusion. Renaming is purely an artifact of the substitution model.
