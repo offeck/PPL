@@ -216,7 +216,7 @@ c. In the environment model, values are never substituted into the body at all. 
 
 ## Question 1.11
 
-**Q1.10**
+**Q1.11**
 
 **A:** 
 
