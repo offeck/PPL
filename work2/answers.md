@@ -217,7 +217,13 @@ c. In the environment model, values are never substituted into the body at all. 
 ## Question 1.11
 
 **Q1.11**
+a. Why is renaming not required in the environment model?
+b. Is renaming required in the substitution model for a case where the term that is substituted is "closed", i.e., does not contain free variables? Explain.
 
-**A:** 
+**A:**
 
-a. In the environment model (L4), there's no substitution at all — variables are looked up by navigating the frame hierarchy at runtime. The hierarchy itself keeps different 'variable names' in different frames, so there's never any confusion. Renaming is purely an artifact of the substitution model.
+a. In the environment model, there is no substitution at all — variables are looked up by navigating the frame hierarchy at runtime. Each frame keeps its own bindings, and lexical scoping ensures that lookup always follows the chain from the closure's defining environment. Since values are never substituted into the body AST, there is no opportunity for variable capture, and renaming is unnecessary.
+
+b. No. Renaming is only needed to prevent **variable capture**, which occurs when a free variable in the substituted term is accidentally "caught" by a parameter of the same name in an enclosing lambda. If the substituted term is closed (contains no free variables), all its variables are already bound internally, so no outer lambda parameter can capture them. Therefore, renaming is not required.
+
+For example, substituting the closed term `(lambda (w) (+ w 3))` into `(lambda (z) (f z))` is safe — there is no free variable that `z` could capture. However, substituting the open term `(lambda (w) (+ w z))` (where `z` is free) into the same expression would cause `z` to be incorrectly captured by the parameter `z`, which is why renaming is needed in that case.
