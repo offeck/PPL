@@ -213,3 +213,11 @@ a. In the substitution model (applicative order), `applyClosure` evaluates the a
 b. In normal order evaluation, arguments are **not evaluated** before substitution — the unevaluated expressions (which are already `CExp`) are substituted directly into the body. Since no Values are produced at substitution time, there is no type mismatch and no need for `valueToLitExp`.
 
 c. In the environment model, values are never substituted into the body at all. Instead, they are stored in **frames** (an environment data structure) and looked up by variable name during evaluation. Since the body AST is never modified, `valueToLitExp` is redundant.
+
+## Question 1.11
+
+**Q1.10**
+
+**A:** 
+
+a. In the environment model (L4), there's no substitution at all — variables are looked up by navigating the frame hierarchy at runtime. The hierarchy itself keeps different zs in different frames, so there's never any confusion. Renaming is purely an artifact of the substitution model.
