@@ -177,7 +177,39 @@ b. What are the reasons that would justify switching from normal order to applic
 
 **A:** a. In normal order, expressions that would loop infinitely in applicative order can be terminated. Furthemore, values are only computed when called upon. So this function, which would crash in applicative order becuase we cannot devide by 0, would not crush becuase the ation of division by zero is avoided by our boolean condition.
 
-(
+```scheme
 (define x 0)
-(if ((eq? x 0) "Cannot devide by zero" (/ 4 x)))
+(
+  (lambda (a b c) (if a b c))
+  (= x 0) "Cannot divide by zero" (/ 4 x)
 )
+```
+
+In applicative order, all three arguments are evaluated before applying the lambda, so `(/ 4 0)` causes a division by zero error. In normal order, the arguments are substituted unevaluated into the body, and `if` only evaluates the consequent `"Cannot divide by zero"` since the condition is `#t`.
+
+b. In applicative order, each argument is evaluated **once** before being passed. In normal order, arguments are substituted unevaluated and may be computed **multiple times** if referenced more than once in the body, leading to redundant computation.
+
+```scheme
+(
+  (lambda (x) (+ x x))
+  (* 2 3)
+)
+```
+
+In applicative order: `(* 2 3)` is computed once to `6`, then `(+ 6 6)` → `12`.
+In normal order: `(* 2 3)` is substituted twice → `(+ (* 2 3) (* 2 3))`, so the multiplication is computed **twice**. Applicative order is more efficient here.
+
+## Question 1.10
+
+**Q1.10**
+a. In L3, what is the role of the function `valueToLitExp`?
+b. The `valueToLitExp` function is not needed in the normal evaluation strategy interpreter (`L3-normal.ts`). Why?
+c. The `valueToLitExp` function is not needed in the environment-model interpreter. Why?
+
+**A:**
+
+a. In the substitution model (applicative order), `applyClosure` evaluates the arguments to **Values** and then substitutes them into the procedure **body**. However, the body is composed of **CExp** (AST nodes), not Values. `valueToLitExp` converts a computed Value back into a corresponding CExp (e.g., `3` → `NumExp(3)`, `#t` → `BoolExp(true)`) so that the substitution is type-compatible.
+
+b. In normal order evaluation, arguments are **not evaluated** before substitution — the unevaluated expressions (which are already `CExp`) are substituted directly into the body. Since no Values are produced at substitution time, there is no type mismatch and no need for `valueToLitExp`.
+
+c. In the environment model, values are never substituted into the body at all. Instead, they are stored in **frames** (an environment data structure) and looked up by variable name during evaluation. Since the body AST is never modified, `valueToLitExp` is redundant.
