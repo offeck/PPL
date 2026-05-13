@@ -161,3 +161,23 @@ After adding lexical addresses:
 - `z` → `[z : free]`: not defined in any enclosing lambda.
 
 Lexical addresses make variable lookup unambiguous without relying on names, which is especially useful when different scopes reuse the same variable name (like `x` above).
+
+## Question 1.8
+
+**Q1.8** In practical session 5, we deal with two representations of primitive operations: PrimOp and Closure. List an advantage for each of the two methods [2 points].
+
+**A:** An advantage of PrimOp is that it doesn't need an environment, because it's behaviour is fixed. (Hence it carries no enviroment). Therefore, it is more efficient.
+An advantage of closure is it's flexibility, because a closure captures its defining environment, the same function body can behave differently depending on where it was created. This enables higher-order languages.
+
+## Question 1.9
+
+**Q1.9** 
+a. What are the reasons that would justify switching from applicative order to normal order evaluation? Give an example.
+b. What are the reasons that would justify switching from normal order to applicative order evaluation? Give an example.
+
+**A:** a. In normal order, expressions that would loop infinitely in applicative order can be terminated. Furthemore, values are only computed when called upon. So this function, which would crash in applicative order becuase we cannot devide by 0, would not crush becuase the ation of division by zero is avoided by our boolean condition.
+
+(
+(define x 0)
+(if ((eq? x 0) "Cannot devide by zero" (/ 4 x)))
+)
