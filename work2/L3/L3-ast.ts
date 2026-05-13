@@ -86,6 +86,8 @@ export const makeBinding = (v: string, val: CExp): Binding => ({ tag: "Binding",
 export const makeLetExp = (bindings: Binding[], body: CExp[]): LetExp => ({ tag: "LetExp", bindings: bindings, body: body });
 // L3
 export const makeLitExp = (val: SExpValue): LitExp => ({ tag: "LitExp", val: val });
+// Work2
+export const makeClassExp = (className: string, fields: VarDecl[], methods: Binding[]): ClassExp => ({ tag: "ClassExp", className: className, fields: fields, methods: methods });
 
 // Type predicates for disjoint types
 export const isProgram = (x: any): x is Program => x.tag === "Program";
@@ -105,11 +107,13 @@ export const isBinding = (x: any): x is Binding => x.tag === "Binding";
 export const isLetExp = (x: any): x is LetExp => x.tag === "LetExp";
 // L3
 export const isLitExp = (x: any): x is LitExp => x.tag === "LitExp";
+// Work2
+export const isClassExp = (x: any): x is ClassExp => x.tag === "ClassExp";
 
 // Type predicates for type unions
 export const isExp = (x: any): x is Exp => isDefineExp(x) || isCExp(x);
 export const isAtomicExp = (x: any): x is AtomicExp => isNumExp(x) || isBoolExp(x) || isStrExp(x) || isPrimOp(x) || isVarRef(x);
-export const isCompoundExp = (x: any): x is CompoundExp => isAppExp(x) || isIfExp(x) || isProcExp(x) || isLitExp(x) || isLetExp(x);
+export const isCompoundExp = (x: any): x is CompoundExp => isAppExp(x) || isIfExp(x) || isProcExp(x) || isLitExp(x) || isLetExp(x) || isClassExp(x);
 export const isCExp = (x: any): x is CExp => isAtomicExp(x) || isCompoundExp(x);
 
 // ========================================================
@@ -208,7 +212,7 @@ export const parseL3Atomic = (token: Token): Result<CExp> =>
 const isPrimitiveOp = (x: string): boolean =>
   ["+", "-", "*", "/", ">", "<", "=", "not", "and", "or", "eq?", "string=?", "cons", "car", "cdr", "list", "pair?", "number?", "boolean?", "symbol?", "string?"].includes(x);
 
-const isSpecialForm = (x: string): boolean => ["if", "lambda", "let", "quote"].includes(x);
+const isSpecialForm = (x: string): boolean => ["if", "lambda", "let", "quote", "class"].includes(x);
 
 const parseAppExp = (op: Sexp, params: Sexp[]): Result<AppExp> => bind(parseL3CExp(op), (rator: CExp) => mapv(mapResult(parseL3CExp, params), (rands: CExp[]) => makeAppExp(rator, rands)));
 
