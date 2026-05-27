@@ -3,11 +3,11 @@
 
 import { map } from "ramda";
 import { isBoolExp, isCExp, isLitExp, isNumExp, isPrimOp, isStrExp, isVarRef,
-         isAppExp, isDefineExp, isIfExp, isLetExp, isProcExp,
+         isAppExp, isDefineExp, isIfExp, isLetExp, isProcExp, isClassExp,
          Binding, VarDecl, CExp, Exp, IfExp, LetExp, ProcExp, Program,
          parseL3Exp,  DefineExp} from "./L3-ast";
 import { applyEnv, makeEmptyEnv, makeExtEnv, Env } from "./L3-env-env";
-import { isClosure, makeClosureEnv, Closure, Value } from "./L3-value";
+import { isClosure, isClass, isObj, isSymbolSExp, makeClosureEnv, makeClassEnv, makeObjEnv, Class, Obj, Closure, Value } from "./L3-value";
 import { applyPrimitive } from "./evalPrimitive";
 import { allT, first, rest, isEmpty, isNonEmptyList } from "../shared/list";
 import { Result, makeOk, makeFailure, bind, mapResult } from "../shared/result";
@@ -26,6 +26,7 @@ const applicativeEval = (exp: CExp, env: Env): Result<Value> =>
     isLitExp(exp) ? makeOk(exp.val) :
     isIfExp(exp) ? evalIf(exp, env) :
     isProcExp(exp) ? evalProc(exp, env) :
+    isClassExp(exp) ? makeOk(makeClassEnv(exp.fields, exp.methods, env)) :
     isLetExp(exp) ? evalLet(exp, env) :
     isAppExp(exp) ? bind(applicativeEval(exp.rator, env),
                       (proc: Value) =>
@@ -51,7 +52,25 @@ const evalProc = (exp: ProcExp, env: Env): Result<Closure> =>
 const applyProcedure = (proc: Value, args: Value[]): Result<Value> =>
     isPrimOp(proc) ? applyPrimitive(proc, args) :
     isClosure(proc) ? applyClosure(proc, args) :
+    isClass(proc) ? applyClassEnv(proc, args) :
+    isObj(proc) ? applyObjEnv(proc, args) :
     makeFailure(`Bad procedure ${format(proc)}`);
+
+const applyObjEnv = (obj: Obj, args: Value[]): Result<Value> => {
+    const methodName = args[0];
+    if (!isSymbolSExp(methodName))
+        return makeFailure(`Expected a method name, got ${format(methodName)}`);
+    const method = obj.methods.find((b: Binding) => b.var.var === methodName.val);
+    if (!method)
+        return makeFailure(`Unrecognized method: ${methodName.val}`);
+    return bind(applicativeEval(method.val, obj.env), (methodVal: Value) =>
+        applyProcedure(methodVal, args.slice(1)));
+};
+
+const applyClassEnv = (cls: Class, args: Value[]): Result<Value> => {
+    const fieldNames = map((v: VarDecl) => v.var, cls.fields);
+    return makeOk(makeObjEnv(cls.methods, makeExtEnv(fieldNames, args, cls.env)));
+};
 
 const applyClosure = (proc: Closure, args: Value[]): Result<Value> => {
     const vars = map((v: VarDecl) => v.var, proc.params);
