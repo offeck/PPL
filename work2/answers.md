@@ -227,3 +227,125 @@ a. In the environment model, there is no substitution at all — variables are l
 b. No. Renaming is only needed to prevent **variable capture**, which occurs when a free variable in the substituted term is accidentally "caught" by a parameter of the same name in an enclosing lambda. If the substituted term is closed (contains no free variables), all its variables are already bound internally, so no outer lambda parameter can capture them. Therefore, renaming is not required.
 
 For example, substituting the closed term `(lambda (w) (+ w 3))` into `(lambda (z) (f z))` is safe — there is no free variable that `z` could capture. However, substituting the open term `(lambda (w) (+ w z))` (where `z` is free) into the same expression would cause `z` to be incorrectly captured by the parameter `z`, which is why renaming is needed in that case.
+
+## Question 2d
+
+### Part 1: ClassExp to ProcExp conversion
+
+Original program:
+
+```scheme
+(define pi 3.14)
+(define square (lambda (x) (* x x)))
+(define circle
+  (class (x y radius)
+    (
+      (area (lambda () (* (square radius) pi)))
+      (perimeter (lambda () (* 2 pi radius)))
+    )
+  )
+)
+(define c (circle 0 0 3))
+(c 'area)
+```
+
+After converting the ClassExp to ProcExp:
+
+```scheme
+(define pi 3.14)
+(define square (lambda (x) (* x x)))
+(define circle
+  (lambda (x y radius)
+    (lambda (msg)
+      (if (eq? msg 'area) (* (square radius) pi)
+        (if (eq? msg 'perimeter) (* 2 pi radius)
+          'error)))))
+(define c (circle 0 0 3))
+(c 'area)
+```
+
+### Part 2: Expressions passed to L3applicativeEval (substitution model)
+
+```
+3.14
+(lambda (x) (* x x))
+(lambda (x y radius) (lambda (msg) (if (eq? msg 'area) (* (square radius) pi) (if (eq? msg 'perimeter) (* 2 pi radius) 'error))))
+(circle 0 0 3)
+circle
+0
+0
+3
+(lambda (msg) (if (eq? msg 'area) (* (square 3) pi) (if (eq? msg 'perimeter) (* 2 pi 3) 'error)))
+(c 'area)
+c
+'area
+(if (eq? 'area 'area) (* (square 3) pi) (if (eq? 'area 'perimeter) (* 2 pi 3) 'error))
+(eq? 'area 'area)
+eq?
+'area
+'area
+(* (square 3) pi)
+*
+(square 3)
+square
+3
+(* 3 3)
+*
+3
+3
+pi
+```
+
+Result: 28.26
+
+Explanation of key steps:
+- Defines evaluate their val: `3.14`, `(lambda ...)`, `(lambda ...)`
+- `(circle 0 0 3)`: evaluates `circle` → Closure, then args `0, 0, 3`. Applies by substituting x=0, y=0, radius=3 into the body. The result `(lambda (msg) ...)` is evaluated to a Closure (bound to `c`).
+- `(c 'area)`: evaluates `c` → Closure, `'area` → symbol. Applies by substituting msg='area into the body. The `if` evaluates `(eq? 'area 'area)` → `#t`, then evaluates `(* (square 3) pi)`. This calls `square` with 3, which substitutes x=3 into `(* x x)` yielding `(* 3 3)` → 9. Finally `(* 9 3.14)` → 28.26.
+
+### Part 3: Environment diagram (environment model)
+
+```
+┌──────────────────────────────────────────────────────────────┐
+│ GE (Global Environment)                                      │
+│                                                              │
+│ pi: 3.14                                                     │
+│ square: ●──→ Closure1                                        │
+│ circle: ●──→ Closure2                                        │
+│ c:      ●──→ Closure3                                        │
+└──────────────────────────────────────────────────────────────┘
+    ↑                                           ↑
+    │                                           │
+    │    ┌─────────────────────────────────┐    │
+    │    │ E1                              │    │
+    │    │ x: 0                            │────┘
+    │    │ y: 0                            │
+    │    │ radius: 3                       │
+    │    └─────────────────────────────────┘
+    │                    ↑
+    │                    │
+    │    ┌───────────────┴─────────────────┐
+    │    │ E2                              │
+    │    │ msg: 'area                      │
+    │    └─────────────────────────────────┘
+    │
+    │    ┌─────────────────────────────────┐
+    │    │ E3                              │
+    │    │ x: 3                            │────┘
+    └────┘─────────────────────────────────┘
+
+Closure1 = <params: (x),           body: (* x x),           env: GE>
+Closure2 = <params: (x y radius),  body: (lambda (msg) ...), env: GE>
+Closure3 = <params: (msg),         body: (if (eq? msg ..)),  env: E1>
+```
+
+**Evaluation trace:**
+
+1. `pi`, `square`, `circle` are defined in GE. Closure1 and Closure2 point to GE.
+2. `(circle 0 0 3)`: creates **E1** = {x:0, y:0, radius:3} extending GE. Evaluates `(lambda (msg) ...)` in E1, producing **Closure3** which points to E1. Bound to `c` in GE.
+3. `(c 'area)`: creates **E2** = {msg:'area} extending E1 (Closure3's env). Evaluates the if-chain in E2:
+   - `msg` → looked up in E2 → `'area`
+   - `(eq? 'area 'area)` → `#t`
+   - Evaluates `(* (square radius) pi)` in E2
+4. `(square 3)`: `square` looked up E2→E1→GE → Closure1. `radius` looked up E2→E1 → 3. Creates **E3** = {x:3} extending GE (Closure1's env). Evaluates `(* x x)` in E3 → 9.
+5. `pi` looked up E2→E1→GE → 3.14. Result: `(* 9 3.14)` → **28.26**
