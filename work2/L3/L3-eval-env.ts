@@ -68,6 +68,9 @@ const applyObjEnv = (obj: Obj, args: Value[]): Result<Value> => {
 };
 
 const applyClassEnv = (cls: Class, args: Value[]): Result<Value> => {
+    if (args.length !== cls.fields.length) {
+        return makeFailure(`Expected ${cls.fields.length} fields, got ${args.length}`);
+    }
     const fieldNames = map((v: VarDecl) => v.var, cls.fields);
     return makeOk(makeObjEnv(cls.methods, makeExtEnv(fieldNames, args, cls.env)));
 };
@@ -92,8 +95,19 @@ const evalCExps = (first: Exp, rest: Exp[], env: Env): Result<Value> =>
 // Compute the rhs of the define, extend the env with the new binding
 // then compute the rest of the exps in the new env.
 const evalDefineExps = (def: DefineExp, exps: Exp[], env: Env): Result<Value> =>
+    isClassExp(def.val) ? evalSequence(exps, makeClassDefinitionEnv(def, env)) :
     bind(applicativeEval(def.val, env), (rhs: Value) => 
             evalSequence(exps, makeExtEnv([def.var.var], [rhs], env)));
+
+const makeClassDefinitionEnv = (def: DefineExp, env: Env): Env => {
+    if (!isClassExp(def.val)) {
+        return env;
+    }
+    const cls = makeClassEnv(def.val.fields, def.val.methods, env);
+    const classEnv = makeExtEnv([def.var.var], [cls], env);
+    cls.env = classEnv;
+    return classEnv;
+};
 
 
 // Main program

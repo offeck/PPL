@@ -228,7 +228,11 @@ const parseIfExp = (params: Sexp[]): Result<IfExp> =>
 const parseProcExp = (vars: Sexp, body: Sexp[]): Result<ProcExp> =>
   isArray(vars) && allT(isString, vars) ? mapv(mapResult(parseL3CExp, body), (cexps: CExp[]) => makeProcExp(map(makeVarDecl, vars), cexps)) : makeFailure(`Invalid vars for ProcExp ${format(vars)}`);
 
-const isGoodBindings = (bindings: Sexp): bindings is [string, Sexp][] => isArray(bindings) && allT(isNonEmptyList<Sexp>, bindings) && allT(isIdentifier, map(first, bindings));
+const isGoodBinding = (binding: Sexp): binding is [string, Sexp] =>
+  isArray(binding) && binding.length === 2 && isIdentifier(binding[0]);
+
+const isGoodBindings = (bindings: Sexp): bindings is [string, Sexp][] =>
+  isArray(bindings) && allT(isGoodBinding, bindings);
 
 const parseLetExp = (bindings: Sexp, body: Sexp[]): Result<LetExp> => {
   if (!isGoodBindings(bindings)) {
@@ -244,7 +248,7 @@ const parseLetExp = (bindings: Sexp, body: Sexp[]): Result<LetExp> => {
 };
 
 const parseClassExp = (fields: Sexp, methods: Sexp): Result<ClassExp> => {
-  if (!isArray(fields) || !allT(isString, fields) || isEmpty(fields)) {
+  if (!isArray(fields) || !allT(isIdentifier, fields) || isEmpty(fields)) {
     return makeFailure(`Invalid fields for ClassExp: ${format(fields)}`);
   }
   if (!isArray(methods) || !isGoodBindings(methods) || isEmpty(methods)) {

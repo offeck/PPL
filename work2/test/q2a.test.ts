@@ -18,6 +18,12 @@ describe('Q2A Tests', () => {
           expect(bind(p(`(class ((first (lambda () a)) (second (lambda () b)) (sum (lambda () (+ a b)))))`),parseL3Exp)).is.satisfy(isFailure);
      });
 
+     it('rejects malformed class bindings and fields', () => {
+          expect(bind(p(`(class (1) ((first (lambda () 1))))`),parseL3Exp)).is.satisfy(isFailure);
+          expect(bind(p(`(class (a) ((first)))`),parseL3Exp)).is.satisfy(isFailure);
+          expect(bind(p(`(class (a) ((first (lambda () a) 1)))`),parseL3Exp)).is.satisfy(isFailure);
+     });
+
 
      it('test parse/unparse program', () => {
           expect(bind(parseL3(`(L3 (define pair (class (a b) ((first (lambda () a)) (second (lambda () b)) (sum (lambda () (+ a b)))))) (let ((p12 (pair 1 2)) (p34 (pair 3 4))) (if (> (p12 'first) (p34 'second)) #t #f)))`), x=>makeOk(unparseL3(x)))).to.deep.equal(makeOk(`(L3 (define pair (class (a b) ((first (lambda () a)) (second (lambda () b)) (sum (lambda () (+ a b)))))) (let ((p12 (pair 1 2)) (p34 (pair 3 4))) (if (> (p12 'first) (p34 'second)) #t #f)))`));

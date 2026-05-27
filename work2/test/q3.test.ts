@@ -13,6 +13,8 @@ describe('Q4 Tests', () => {
      it('parse primitive ops', () => {
          expect(l2ToPythonResult(`(+ 3 5 7)`)).to.deep.equal(makeOk(`(3 + 5 + 7)`));
          expect(l2ToPythonResult(`(= 3 (+ 1 2))`)).to.deep.equal(makeOk(`(3 == (1 + 2))`));
+         expect(l2ToPythonResult(`(boolean? x)`)).to.deep.equal(makeOk(`(type(x) == bool)`));
+         expect(l2ToPythonResult(`(number? x)`)).to.deep.equal(makeOk(`(type(x) == int or type(x) == float)`));
      });
 
      it('parse "if" expressions', () => {
@@ -22,6 +24,7 @@ describe('Q4 Tests', () => {
      it('parse "lambda" expressions', () => {
          expect(l2ToPythonResult(`(lambda (x y) (* x y))`)).to.deep.equal(makeOk(`(lambda x,y : (x * y))`));
          expect(l2ToPythonResult(`((lambda (x y) (* x y)) 3 4)`)).to.deep.equal(makeOk(`(lambda x,y : (x * y))(3,4)`));
+         expect(l2ToPythonResult(`(lambda () 1)`)).to.deep.equal(makeOk(`(lambda : 1)`));
      });
     
     it("define constants", () => {

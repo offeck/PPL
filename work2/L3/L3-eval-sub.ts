@@ -71,6 +71,9 @@ const applyObj = (obj: Obj, args: Value[], env: Env): Result<Value> => {
 };
 
 const applyClass = (cls: Class, args: Value[]): Result<Value> => {
+    if (args.length !== cls.fields.length) {
+        return makeFailure(`Expected ${cls.fields.length} fields, got ${args.length}`);
+    }
     const fieldNames = map((v: VarDecl) => v.var, cls.fields);
     const litArgs: CExp[] = map(valueToLitExp, args);
     const methodVals = map((b: Binding) => b.val, cls.methods);

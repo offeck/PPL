@@ -26,7 +26,7 @@ Transforms to the equivalent L11 program:
 
 **Q:** Let us define the L21 language as L2 excluding the special form 'define'. Is there a program in L2 which cannot be transformed to an equivalent program in L21?
 
-**A:** No. L2 adds `lambda` and `if` to L1, and `lambda` allows us to replace every `define` with an immediately-applied lambda. The transformation is: `(define x e) rest...` becomes `((lambda (x) rest...) e)`. Sequential defines become nested lambdas. Additionally, `define` in L2 does not support recursion — the closure captures the environment at creation time, before the binding is added — so no expressive power is lost.
+**A:** No. L2 adds `lambda` and `if` to L1, and `lambda` allows us to replace every `define` with an immediately-applied lambda. The transformation is: `(define x e) rest...` becomes `((lambda (x) rest...) e)`. Sequential non-recursive defines become nested lambdas. Recursive definitions can also be eliminated by using a fixed-point combinator/nameless-recursion encoding, so `define` is a naming convenience rather than an essential source of expressive power.
 
 **Example:**
 
@@ -72,7 +72,7 @@ Transforms to the equivalent L22 expression:
 
 **Q:** Let us define the L23 language as L2, where procedures (lambda) are first-order, i.e. cannot get functions as arguments. Is there a program in L2 which cannot be transformed to an equivalent program in L23?
 
-**A:** No. L23 still has `lambda`, `if`, `define`, and recursion, so it remains Turing-Complete and can compute any computable function. Higher-order functions are a syntactic convenience, not a computational necessity. For any L2 program that passes a function as an argument, we can eliminate the higher-order usage by inlining the specific function at each call site. Since L2 programs are finite, there are always finitely many functions being passed, so this transformation (defunctionalization) always terminates.
+**A:** No. L23 still has `lambda`, `if`, `define`, and recursion, so it remains Turing-Complete and can compute any computable function. Higher-order functions are a syntactic convenience, not a computational necessity. For any finite L2 program, higher-order function values can be represented by first-order tags plus an `apply` dispatcher over the finite set of function bodies that appear in the program. This transformation is the standard defunctionalization argument.
 
 **Example:**
 
@@ -259,7 +259,7 @@ After converting the ClassExp to ProcExp:
     (lambda (msg)
       (if (eq? msg 'area) (* (square radius) pi)
         (if (eq? msg 'perimeter) (* 2 pi radius)
-          'error)))))
+          #f)))))
 (define c (circle 0 0 3))
 (c 'area)
 ```
@@ -269,17 +269,17 @@ After converting the ClassExp to ProcExp:
 ```
 3.14
 (lambda (x) (* x x))
-(lambda (x y radius) (lambda (msg) (if (eq? msg 'area) (* (square radius) pi) (if (eq? msg 'perimeter) (* 2 pi radius) 'error))))
+(lambda (x y radius) (lambda (msg) (if (eq? msg 'area) (* (square radius) pi) (if (eq? msg 'perimeter) (* 2 pi radius) #f))))
 (circle 0 0 3)
 circle
 0
 0
 3
-(lambda (msg) (if (eq? msg 'area) (* (square 3) pi) (if (eq? msg 'perimeter) (* 2 pi 3) 'error)))
+(lambda (msg) (if (eq? msg 'area) (* (square 3) pi) (if (eq? msg 'perimeter) (* 2 pi 3) #f)))
 (c 'area)
 c
 'area
-(if (eq? 'area 'area) (* (square 3) pi) (if (eq? 'area 'perimeter) (* 2 pi 3) 'error))
+(if (eq? 'area 'area) (* (square 3) pi) (if (eq? 'area 'perimeter) (* 2 pi 3) #f))
 (eq? 'area 'area)
 eq?
 'area
