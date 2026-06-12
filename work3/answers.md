@@ -96,37 +96,46 @@ These are two procedure types of different arity (1 vs 2). `canUnify` requires e
 
 **(i) Pool:**
 
-| TVar | Sub-expression                                              |
-| ---- | ----------------------------------------------------------- |
-| T0   | `((lambda (f1) (lambda (x1) (f1 x1 x1))) (lambda (y1) y1))` |
-| T1   | `(lambda (f1) (lambda (x1) (f1 x1 x1)))`                    |
-| T2   | `(lambda (x1) (f1 x1 x1))`                                  |
-| T3   | `(lambda (y1) y1)`                                          |
-| T4   | `(f1 x1 x1)`                                                |
-| Tf1  | `f1`                                                        |
-| Tx1  | `x1`                                                        |
-| Ty1  | `y1`                                                        |
+| TVar | Sub-expression |
+| ---- | -------------- |
+| T0 | `((lambda (f1) (lambda (x1) ((f1 x1) x1))) (lambda (y1) y1))` |
+| T1 | `(lambda (f1) (lambda (x1) ((f1 x1) x1)))` |
+| T2 | `(lambda (x1) ((f1 x1) x1))` |
+| T3 | `(lambda (y1) y1)` |
+| T4 | `((f1 x1) x1)` |
+| T5 | `(f1 x1)` |
+| Tf1 | `f1` |
+| Tx1 | `x1` |
+| Ty1 | `y1` |
 
 **(ii) Equations:**
 
 1. Lambda: `T1 = [Tf1 -> T2]`
 2. Lambda: `T2 = [Tx1 -> T4]`
 3. Lambda: `T3 = [Ty1 -> Ty1]`
-4. Application `((lambda (f1) (lambda (x1) (f1 x1 x1))) (lambda (y1) y1))`: `T1 = [T3 -> T0]`
-5. Application `(f1 x1 x1)`: `Tf1 = [Tx1 * Tx1 -> T4]`
+4. Application `((lambda (f1) (lambda (x1) ((f1 x1) x1))) (lambda (y1) y1))`: `T1 = [T3 -> T0]`
+5. Application `(f1 x1)`: `Tf1 = [Tx1 -> T5]`
+6. Application `((f1 x1) x1)`: `T5 = [Tx1 -> T4]`
 
-**(iii) The inference fails.**
+**(iii) The inference fails (occur-check / circular type).**
 
-The operand `(lambda (y1) y1)` is the identity function, so from equation (3) it has the one-parameter type `T3 = [Ty1 -> Ty1]`.
+Unlike 1.2.2, the body here is the **curried** application `((f1 x1) x1)`: `f1` is applied to a single argument `x1`, and the result is then applied to `x1`. So `f1` is used as a one-parameter procedure, consistent with the identity operand — there is **no arity conflict** this time.
 
-Combining equations (1) and (4): `[Tf1 -> T2] = [T3 -> T0]`, which gives `Tf1 = T3 = [Ty1 -> Ty1]`. So `f1` is a procedure with **one** parameter.
+Tracing the unification:
 
-But in the body `(f1 x1 x1)`, `f1` is applied to **two** arguments, so equation (5) forces `Tf1 = [Tx1 * Tx1 -> T4]`, a procedure with **two** parameters.
-
-Unification must then solve the conflicting equation:
+- The operand `(lambda (y1) y1)` is the identity, so by equation (3), `T3 = [Ty1 -> Ty1]`.
+- Combining (1) and (4): `[Tf1 -> T2] = [T3 -> T0]`, giving `Tf1 = T3 = [Ty1 -> Ty1]`.
+- Combining with (5): `[Ty1 -> Ty1] = [Tx1 -> T5]`, giving `Ty1 = Tx1` and `T5 = Ty1`. Hence `T5 = Tx1`.
+- Substituting `T5 = Tx1` into equation (6) `T5 = [Tx1 -> T4]` yields the conflicting equation:
 
 ```
-[Ty1 -> Ty1] = [Tx1 * Tx1 -> T4]
+Tx1 = [Tx1 -> T4]
 ```
 
-These are two procedure types of different arity (1 vs 2). `canUnify` requires equal numbers of parameters, so it cannot unify them and the algorithm reports *"Equation contains incompatible types"*. The inference fails because `f1` is bound to the identity (one parameter) yet applied to two arguments.
+The algorithm now tries to bind the type variable `Tx1` to a procedure type that **contains `Tx1` itself**. The occur-check in `checkNoOccurrence` detects this circular reference and the algorithm reports:
+
+```
+Occur check error - circular sub Tx1 in (Tx1 -> T4)
+```
+
+Intuitively, since `f1` is the identity, `(f1 x1)` evaluates to `x1`, so `((f1 x1) x1)` is the self-application `(x1 x1)`. This forces `x1` to be a function whose own domain equals its own type — the infinite type `Tx1 = [Tx1 -> ...]`, which has no finite solution. The inference therefore fails.
