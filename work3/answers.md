@@ -139,3 +139,58 @@ Occur check error - circular sub Tx1 in (Tx1 -> T4)
 ```
 
 Intuitively, since `f1` is the identity, `(f1 x1)` evaluates to `x1`, so `((f1 x1) x1)` is the self-application `(x1 x1)`. This forces `x1` to be a function whose own domain equals its own type — the infinite type `Tx1 = [Tx1 -> ...]`, which has no finite solution. The inference therefore fails.
+
+### 1.3: `(lambda (f) (f (right (lambda (s) (f (left s))))))`
+
+**(i) Pool:**
+
+| TVar | Sub-expression |
+| ---- | -------------- |
+| T0 | `(lambda (f) (f (right (lambda (s) (f (left s))))))` |
+| T1 | `(f (right (lambda (s) (f (left s)))))` |
+| T2 | `(right (lambda (s) (f (left s))))` |
+| T3 | `(lambda (s) (f (left s)))` |
+| T4 | `(f (left s))` |
+| T5 | `(left s)` |
+| Tf | `f` |
+| Ts | `s` |
+
+(`Tx` and `Ty` below are the fresh type variables introduced by the `right` and `left` rules.)
+
+**(ii) Equations:**
+
+1. Lambda: `T0 = [Tf -> T1]`
+2. Lambda: `T3 = [Ts -> T4]`
+3. Application `(f (right (lambda (s) (f (left s)))))`: `Tf = [T2 -> T1]`
+4. Right form `(right (lambda (s) (f (left s))))`: `T2 = Tx + T3`
+5. Application `(f (left s))`: `Tf = [T5 -> T4]`
+6. Left form `(left s)`: `T5 = Ts + Ty`
+
+**(iii) The inference succeeds.**
+
+`f` is applied to two operands — `(right (lambda (s) (f (left s))))` and `(left s)` — so from equations (3) and (5) its single parameter type must be the same:
+
+```
+[T2 -> T1] = [T5 -> T4]  =>  T2 = T5,  T1 = T4
+```
+
+Unifying the two sum types bound to that parameter (equations 4 and 6):
+
+```
+Tx + T3 = Ts + Ty  =>  Tx = Ts,  Ty = T3 = [Ts -> T4]
+```
+
+The `left` injection fixes the left summand to `Ts`, and the `right` injection fixes the right summand to `[Ts -> T4]`. The sum type `(Ts + [Ts -> T4])` accommodates both injections, so there is no conflict — and no type variable occurs within its own binding, so there is no occur-check failure.
+
+Final substitution (free variables `Ts`, `T4`):
+
+| Var | Resolves to |
+| ------ | ----------- |
+| T1 | `T4` |
+| Tx | `Ts` |
+| T3, Ty | `[Ts -> T4]` |
+| T2, T5 | `(Ts + [Ts -> T4])` |
+| Tf | `[(Ts + [Ts -> T4]) -> T4]` |
+| T0 | `[[(Ts + [Ts -> T4]) -> T4] -> T4]` |
+
+So the whole expression has type `[[(Ts + [Ts -> T4]) -> T4] -> T4]`.
