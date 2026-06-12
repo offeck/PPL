@@ -35,13 +35,17 @@ export const makeEmptySub = (): Sub => ({tag: "Sub", vars: [], tes: []});
 // Return error if a circular reference is found.
 export const checkNoOccurrence = (tvar: TVar, te: TExp): Result<true> => {
     const check = (e: TExp): Result<true> =>
-        isTVar(e) ? ((e.var === tvar.var) ? bind(unparseTExp(te), up => makeFailure(`Occur check error - circular sub ${tvar.var} in ${format(up)}`)) : 
-                                            makeOk(true)) :
-        isAtomicTExp(e) ? makeOk(true) :
-        isProcTExp(e) ? bind(mapResult(check, e.paramTEs), _ => check(e.returnTE)) :
-        isListTExp(e) ?
-            makeFailure("HW3 3.2.a - Implement this branch") :
-        makeFailure(`Bad type expression ${e} in ${format(te)}`);
+      isTVar(e)
+        ? e.var === tvar.var
+          ? bind(unparseTExp(te), (up) => makeFailure(`Occur check error - circular sub ${tvar.var} in ${format(up)}`))
+          : makeOk(true)
+        : isAtomicTExp(e)
+          ? makeOk(true)
+          : isProcTExp(e)
+            ? bind(mapResult(check, e.paramTEs), (_) => check(e.returnTE))
+            : isListTExp(e)
+              ? check(e.itemTE)
+              : makeFailure(`Bad type expression ${e} in ${format(te)}`);
     return check(te);
 };
 
@@ -69,7 +73,7 @@ export const applySub = (sub: Sub, te: TExp): TExp =>
     isAtomicTExp(te) ? te :
     isTVar(te) ? subGet(sub, te) :
     isProcTExp(te) ? makeProcTExp(map((te) => applySub(sub, te), te.paramTEs), applySub(sub, te.returnTE)) :
-    /* isListTExp(te) ? // HW3 3.2.b - Implement this branch  : */
+    isListTExp(te) ? makeListTExp(applySub(sub, te.itemTE)) :
     te;
 
 // ============================================================

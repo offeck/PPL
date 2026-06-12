@@ -170,11 +170,11 @@ export const typeofPrim = (p: PrimOp): Result<TExp> =>
                                         : p.op === "newline"
                                           ? makeOk(makeProcTExp([], makeVoidTExp()))
                                           : p.op === "cons"
-                                            ? makeFailure("HW3 3.1 - Implement this branch")
+                                            ? makeOk(((t: TExp) => makeProcTExp([t, makeListTExp(t)], makeListTExp(t)))(T()))
                                             : p.op === "car"
-                                              ? makeFailure("HW3 3.1 - Implement this branch")
+                                              ? makeOk(((t: TExp) => makeProcTExp([makeListTExp(t)], t))(T()))
                                               : p.op === "cdr"
-                                                ? makeFailure("HW3 3.1 - Implement this branch")
+                                                ? makeOk(((t: TExp) => makeProcTExp([makeListTExp(t)], makeListTExp(t)))(T()))
                                                 : makeFailure(`Primitive not yet implemented: ${p.op}`);
 
 // Purpose: compute the type of an if-exp
