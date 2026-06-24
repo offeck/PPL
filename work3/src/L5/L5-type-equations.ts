@@ -162,14 +162,15 @@ export const makeEquationsFromExp = (exp: A.Exp, pool: Pool): Opt.Optional<Equat
         ? V.isEmptySExp(exp.val)
           ? Opt.mapv(inPool(pool, exp), (left: T.TExp) => [makeEquation(left, T.makeListTExp(T.makeFreshTVar()))])
           : V.isCompoundSExp(exp.val)
-            ? Opt.bind(inPool(pool, exp), (left: T.TExp) =>
-                Opt.bind(inPool(pool, A.makeLitExp(exp.val.val1)), (head: T.TExp) =>
-                  Opt.mapv(inPool(pool, A.makeLitExp(exp.val.val2)), (tail: T.TExp) => [
-                    makeEquation(left, T.makeListTExp(head)),
-                    makeEquation(tail, T.makeListTExp(head)),
-                  ]),
-                ),
-              )
+            ? ((val: V.CompoundSExp) =>
+                Opt.bind(inPool(pool, exp), (left: T.TExp) =>
+                  Opt.bind(inPool(pool, A.makeLitExp(val.val1)), (head: T.TExp) =>
+                    Opt.mapv(inPool(pool, A.makeLitExp(val.val2)), (tail: T.TExp) => [
+                      makeEquation(left, T.makeListTExp(head)),
+                      makeEquation(tail, T.makeListTExp(head)),
+                    ]),
+                  ),
+                ))(exp.val)
             : isNumber(exp.val)
               ? Opt.mapv(inPool(pool, exp), (left: T.TExp) => [makeEquation(left, T.makeNumTExp())])
               : isBoolean(exp.val)
